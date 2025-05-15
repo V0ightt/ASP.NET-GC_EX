@@ -1,17 +1,15 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using WebApplication1.Models;
-
-namespace WebApplication1.Controllers;
+using ExpenseManager.Models;
+using Microsoft.AspNetCore.Authorization;
+namespace ExpenseManager.Controllers;
 
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
-    private readonly ExpensesDBContext _context;
+    private readonly ExpensesDbContext _context;
 
-
-
-    public HomeController(ILogger<HomeController> logger, ExpensesDBContext context)
+    public HomeController(ILogger<HomeController> logger, ExpensesDbContext context)
     {
         _logger = logger;
         _context = context;
@@ -35,7 +33,7 @@ public class HomeController : Controller
     {
         if (id != null)
         {
-           var expenseID = _context.Expenses.Find(id);
+            var expenseID = _context.Expenses.Find(id);
             return View(expenseID);
         }
         return View();
@@ -52,7 +50,8 @@ public class HomeController : Controller
         return RedirectToAction("Expenses");
     }
 
-    public IActionResult AddEditExpensesForm(Expense model) {
+    public IActionResult AddEditExpensesForm(Expense model)
+    {
         if (model.Id == 0)
         {
             _context.Expenses.Add(model);
