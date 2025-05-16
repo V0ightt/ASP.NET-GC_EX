@@ -1,14 +1,20 @@
 using ExpenseManager.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.OpenApi.Models;
+using Scalar.AspNetCore;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// 1.  MVC & Razor 
 builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<ExpensesDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddRazorPages();
+builder.Services.AddOpenApi();
 
+// 2. EntityFramework + Identity.
+builder.Services.AddDbContext<ExpensesDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opts =>
 {
     opts.Password.RequiredLength = 6;
@@ -18,15 +24,37 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opts =>
 .AddDefaultTokenProviders()
 .AddDefaultUI(); // <-- Add this line
 
+// 3. JWT Authentication
+var jwtCfg = builder.Configuration.GetSection("Jwt");
+var key = Encoding.UTF8.GetBytes(jwtCfg["Key"]);
+
+builder.Services.AddAuthentication(options =>
+{
+    // ? keep Identity’s cookie as the *default* for browser traffic
+    options.DefaultScheme = IdentityConstants.ApplicationScheme;
+})
+.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, opts =>
+{
+    opts.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidIssuer = jwtCfg["Issuer"],
+        ValidAudience = jwtCfg["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true
+    };
+});
+
+
+
 builder.Services.ConfigureApplicationCookie(opts =>
 {
     opts.LoginPath = "/Identity/Account/Login";
     opts.AccessDeniedPath = "/Identity/Account/AccessDenied";
 });
 
-builder.Services.AddControllersWithViews();   // already there
-
-builder.Services.AddRazorPages();          // add this if it’s missing
 var app = builder.Build();
 
 // Create admin user and role if they don't exist
@@ -57,6 +85,11 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+}
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
