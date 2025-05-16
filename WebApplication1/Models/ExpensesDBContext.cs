@@ -10,4 +10,15 @@ public class ExpensesDbContext
         : base(options) { }
 
     public DbSet<Expense> Expenses { get; set; }   // keep your table
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+
+        builder.Entity<Expense>()
+               .HasOne(e => e.User)
+               .WithMany()                     // we don’t need navigation the other way yet
+               .HasForeignKey(e => e.ApplicationUserId)
+               .OnDelete(DeleteBehavior.Cascade);
+    }
 }

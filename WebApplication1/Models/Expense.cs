@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace ExpenseManager.Models
 {
     public class Expense
@@ -7,6 +9,9 @@ namespace ExpenseManager.Models
 
         public string? Property { get; set; }
 
+        public string ApplicationUserId { get; set; }  // nvarchar(450) matches Identity PK
+        [ForeignKey(nameof(ApplicationUserId))]
+        public ApplicationUser User { get; set; }
 
     }
 }
