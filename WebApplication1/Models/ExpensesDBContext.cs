@@ -1,15 +1,24 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// Data/ExpensesDbContext.cs   (rename if you like)
+using ExpenseManager.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
-namespace WebApplication1.Models
+public class ExpensesDbContext
+    : IdentityDbContext<ApplicationUser>          // <- change this
 {
-    public class ExpensesDBContext : DbContext
-    {
-        public DbSet<Expense> Expenses { get; set; }
+    public ExpensesDbContext(DbContextOptions<ExpensesDbContext> options)
+        : base(options) { }
 
-        public ExpensesDBContext(DbContextOptions<ExpensesDBContext> options)
-            : base(options) 
-        {
-            
-        }
+    public DbSet<Expense> Expenses { get; set; }   // keep your table
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+
+        builder.Entity<Expense>()
+               .HasOne(e => e.User)
+               .WithMany()                     // we don’t need navigation the other way yet
+               .HasForeignKey(e => e.ApplicationUserId)
+               .OnDelete(DeleteBehavior.Cascade);
     }
 }
