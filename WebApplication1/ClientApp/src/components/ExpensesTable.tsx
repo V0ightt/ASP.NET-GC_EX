@@ -42,14 +42,16 @@ export default function ExpensesTable() {
     const handleDelete = async (id: number) => {
         const snapshot = [...list]
         setList(prev => prev.filter(x => x.id !== id))
+
         try {
-            await deleteExpense(id)
+            await deleteExpense(id)      // returns void, no error
             toast.success('Deleted')
         } catch {
-            setList(snapshot)
+            setList(snapshot)            // true failure: roll back
             toast.error('Delete failed')
         }
     }
+
 
     return (
         <>
