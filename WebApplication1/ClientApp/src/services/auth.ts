@@ -22,5 +22,25 @@ export const login = async (dto: LoginDto) => {
     localStorage.setItem(TOKEN_KEY, data.access_token)
 }
 
+export const register = async (dto: LoginDto) => {
+    const res = await fetch('/api/v1/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dto)
+    })
+
+    if (!res.ok) {
+        const msg = await res.text()
+        throw new Error(msg)
+    }
+
+    const data = await res.json()
+    localStorage.setItem(TOKEN_KEY, data.access_token)
+}
+
+export const logout = () => {
+    localStorage.removeItem(TOKEN_KEY)
+    window.location.href = '/login'
+}
 export const getToken = () => localStorage.getItem(TOKEN_KEY)
-export const logout = () => localStorage.removeItem(TOKEN_KEY)
+

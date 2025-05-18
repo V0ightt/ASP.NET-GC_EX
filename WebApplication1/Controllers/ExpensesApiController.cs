@@ -103,3 +103,4 @@ public class ExpenseDto
     public decimal Value { get; set; }
     public string? Property { get; set; }
 }
+
