@@ -52,6 +52,8 @@ public class HomeController : Controller
 
         return View(expense);
     }
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult DeleteExpense(int id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
